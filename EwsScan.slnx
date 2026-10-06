@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EwsScan/EwsScan.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EwsScan.Tests/EwsScan.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Fixtures/">
+    <Project Path="tests/Fixtures/ClassicApp/ClassicApp.csproj" />
+    <Project Path="tests/Fixtures/PortApp/PortApp.csproj" />
+  </Folder>
+</Solution>

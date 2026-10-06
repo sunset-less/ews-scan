@@ -1,0 +1,488 @@
+{
+  "statuses": {
+    "verified": "Verified",
+    "differences": "Verified with differences",
+    "unavailable": "Not possible in Graph"
+  },
+  "entries": {
+    "mail-find": {
+      "title": "Find and read mail",
+      "status": "verified"
+    },
+    "mail-grouping": {
+      "title": "Grouped results and SeekToCondition paging",
+      "status": "verified"
+    },
+    "mail-send": {
+      "title": "Create and send",
+      "status": "verified"
+    },
+    "mail-replies": {
+      "title": "Reply, reply all and forward",
+      "status": "verified"
+    },
+    "mail-attachments": {
+      "title": "Attachments",
+      "status": "verified"
+    },
+    "mail-update": {
+      "title": "Update items",
+      "status": "verified"
+    },
+    "mail-move-delete": {
+      "title": "Move, copy and delete",
+      "status": "verified"
+    },
+    "mail-conversations": {
+      "title": "Conversations",
+      "status": "verified"
+    },
+    "mail-mime": {
+      "title": "MIME",
+      "status": "verified"
+    },
+    "mail-junk": {
+      "title": "MarkAsJunk",
+      "status": "differences"
+    },
+    "mail-properties": {
+      "title": "Additional item properties",
+      "status": "differences"
+    },
+    "calendar-items": {
+      "title": "Appointments and recurring series",
+      "status": "verified"
+    },
+    "calendar-meetings": {
+      "title": "Meetings: invite, respond, cancel",
+      "status": "verified"
+    },
+    "calendar-availability": {
+      "title": "Free/busy, rooms and time suggestions",
+      "status": "verified"
+    },
+    "calendar-folders": {
+      "title": "Calendar folders",
+      "status": "verified"
+    },
+    "contacts-read": {
+      "title": "Contacts: find and read",
+      "status": "verified"
+    },
+    "contacts-write": {
+      "title": "Contacts: create, update and delete",
+      "status": "verified"
+    },
+    "contacts-groups": {
+      "title": "Contact groups",
+      "status": "verified"
+    },
+    "contacts-directory": {
+      "title": "ResolveNames and ExpandDL",
+      "status": "verified"
+    },
+    "contacts-people": {
+      "title": "People search",
+      "status": "differences"
+    },
+    "tasks": {
+      "title": "Tasks",
+      "status": "differences"
+    },
+    "notes-journal": {
+      "title": "Notes and Journal",
+      "status": "verified"
+    },
+    "posts": {
+      "title": "Posts",
+      "status": "differences"
+    },
+    "folders": {
+      "title": "Mail folders",
+      "status": "verified"
+    },
+    "search-folders": {
+      "title": "Search folders",
+      "status": "differences"
+    },
+    "sync": {
+      "title": "Sync",
+      "status": "verified"
+    },
+    "ids": {
+      "title": "ConvertId",
+      "status": "verified"
+    },
+    "notifications": {
+      "title": "Pull and streaming notifications",
+      "status": "differences"
+    },
+    "notifications-push": {
+      "title": "Push notifications",
+      "status": "differences"
+    },
+    "oof": {
+      "title": "Out-of-office settings",
+      "status": "differences"
+    },
+    "rules": {
+      "title": "Inbox rules",
+      "status": "verified"
+    },
+    "delegates": {
+      "title": "Delegates",
+      "status": "differences"
+    },
+    "user-configuration": {
+      "title": "User configuration: CategoryList and WorkHours",
+      "status": "differences"
+    },
+    "photos": {
+      "title": "User photos",
+      "status": "differences"
+    },
+    "password": {
+      "title": "GetPasswordExpirationDate and GetPeopleInsights",
+      "status": "verified"
+    },
+    "autodiscover": {
+      "title": "Autodiscover",
+      "status": "verified"
+    },
+    "auth": {
+      "title": "App-only authentication, impersonation and shared mailboxes",
+      "status": "verified"
+    },
+    "hybrid": {
+      "title": "Hybrid: on-premises mailboxes keep using EWS",
+      "status": "verified"
+    },
+    "public-folders": {
+      "title": "Public folders in Exchange Online",
+      "status": "unavailable"
+    },
+    "archive": {
+      "title": "Online archive mailboxes",
+      "status": "unavailable"
+    },
+    "custom-user-configuration": {
+      "title": "Custom UserConfiguration objects",
+      "status": "unavailable"
+    },
+    "folder-permissions": {
+      "title": "Folder permissions other than calendars",
+      "status": "unavailable"
+    },
+    "junk-lists": {
+      "title": "Blocked and safe senders lists",
+      "status": "unavailable"
+    },
+    "add-ins": {
+      "title": "Add-ins",
+      "status": "unavailable"
+    },
+    "ome": {
+      "title": "Message encryption settings",
+      "status": "unavailable"
+    },
+    "retention-tag-list": {
+      "title": "The retention tag list",
+      "status": "unavailable"
+    },
+    "mime-calendar-contacts": {
+      "title": "MimeContent of calendar items and contacts",
+      "status": "unavailable"
+    },
+    "ediscovery": {
+      "title": "eDiscovery",
+      "status": "unavailable"
+    },
+    "unified-messaging": {
+      "title": "Unified Messaging, site mailboxes and client access tokens",
+      "status": "unavailable"
+    },
+    "unified-groups": {
+      "title": "Microsoft 365 Groups operations",
+      "status": "unavailable"
+    },
+    "views": {
+      "title": "DistinguishedGroupBy, FractionalPageItemView and ContactsView",
+      "status": "unavailable"
+    }
+  },
+  "actions": {
+    "FindItem": {
+      "mail": "mail-find",
+      "calendar": "calendar-items",
+      "contacts": "contacts-read",
+      "tasks": "tasks"
+    },
+    "GetItem": {
+      "mail": "mail-find",
+      "calendar": "calendar-items",
+      "contacts": "contacts-read",
+      "tasks": "tasks"
+    },
+    "CreateItem": {
+      "mail": "mail-send",
+      "calendar": "calendar-items",
+      "contacts": "contacts-write",
+      "tasks": "tasks"
+    },
+    "UpdateItem": {
+      "mail": "mail-update",
+      "calendar": "calendar-items",
+      "contacts": "contacts-write",
+      "tasks": "tasks"
+    },
+    "DeleteItem": {
+      "mail": "mail-move-delete",
+      "calendar": "calendar-items",
+      "contacts": "contacts-write",
+      "tasks": "tasks"
+    },
+    "MoveItem": {
+      "any": "mail-move-delete"
+    },
+    "CopyItem": {
+      "any": "mail-move-delete"
+    },
+    "SendItem": {
+      "any": "mail-send"
+    },
+    "GetAttachment": {
+      "any": "mail-attachments"
+    },
+    "CreateAttachment": {
+      "any": "mail-attachments"
+    },
+    "DeleteAttachment": {
+      "any": "mail-attachments"
+    },
+    "GetFolder": {
+      "mail": "folders",
+      "calendar": "calendar-folders",
+      "contacts": "contacts-write",
+      "tasks": "tasks"
+    },
+    "FindFolder": {
+      "mail": "folders",
+      "calendar": "calendar-folders",
+      "contacts": "contacts-write",
+      "tasks": "tasks"
+    },
+    "CreateFolder": {
+      "mail": "folders",
+      "calendar": "calendar-folders",
+      "contacts": "contacts-write",
+      "tasks": "tasks"
+    },
+    "UpdateFolder": {
+      "mail": "folders",
+      "calendar": "calendar-folders",
+      "contacts": "contacts-write",
+      "tasks": "tasks"
+    },
+    "DeleteFolder": {
+      "mail": "folders",
+      "calendar": "calendar-folders",
+      "contacts": "contacts-write",
+      "tasks": "tasks"
+    },
+    "MoveFolder": {
+      "any": "folders"
+    },
+    "CopyFolder": {
+      "any": "folders"
+    },
+    "EmptyFolder": {
+      "any": "folders"
+    },
+    "MarkAllItemsAsRead": {
+      "any": "folders"
+    },
+    "SyncFolderItems": {
+      "any": "sync"
+    },
+    "SyncFolderHierarchy": {
+      "any": "sync"
+    },
+    "Subscribe": {
+      "any": "notifications"
+    },
+    "GetEvents": {
+      "any": "notifications"
+    },
+    "GetStreamingEvents": {
+      "any": "notifications"
+    },
+    "Unsubscribe": {
+      "any": "notifications"
+    },
+    "ConvertId": {
+      "any": "ids"
+    },
+    "ResolveNames": {
+      "any": "contacts-directory"
+    },
+    "ExpandDL": {
+      "any": "contacts-directory"
+    },
+    "GetUserAvailability": {
+      "any": "calendar-availability"
+    },
+    "GetRoomLists": {
+      "any": "calendar-availability"
+    },
+    "GetRooms": {
+      "any": "calendar-availability"
+    },
+    "FindConversation": {
+      "any": "mail-conversations"
+    },
+    "GetConversationItems": {
+      "any": "mail-conversations"
+    },
+    "ApplyConversationAction": {
+      "any": "mail-conversations"
+    },
+    "MarkAsJunk": {
+      "any": "mail-junk"
+    },
+    "FindPeople": {
+      "any": "contacts-people"
+    },
+    "GetUserOofSettings": {
+      "any": "oof"
+    },
+    "SetUserOofSettings": {
+      "any": "oof"
+    },
+    "GetInboxRules": {
+      "any": "rules"
+    },
+    "UpdateInboxRules": {
+      "any": "rules"
+    },
+    "GetDelegate": {
+      "any": "delegates"
+    },
+    "AddDelegate": {
+      "any": "delegates"
+    },
+    "UpdateDelegate": {
+      "any": "delegates"
+    },
+    "RemoveDelegate": {
+      "any": "delegates"
+    },
+    "GetUserConfiguration": {
+      "any": "user-configuration"
+    },
+    "UpdateUserConfiguration": {
+      "any": "user-configuration"
+    },
+    "CreateUserConfiguration": {
+      "any": "custom-user-configuration"
+    },
+    "DeleteUserConfiguration": {
+      "any": "custom-user-configuration"
+    },
+    "GetUserPhoto": {
+      "any": "photos"
+    },
+    "SetUserPhoto": {
+      "any": "photos"
+    },
+    "GetPasswordExpirationDate": {
+      "any": "password"
+    },
+    "GetPeopleInsights": {
+      "any": "password"
+    },
+    "GetUserSettings": {
+      "any": "autodiscover"
+    },
+    "GetDomainSettings": {
+      "any": "autodiscover"
+    },
+    "ArchiveItem": {
+      "any": "archive"
+    },
+    "GetAppManifests": {
+      "any": "add-ins"
+    },
+    "GetClientExtension": {
+      "any": "add-ins"
+    },
+    "SetClientExtension": {
+      "any": "add-ins"
+    },
+    "InstallApp": {
+      "any": "add-ins"
+    },
+    "UninstallApp": {
+      "any": "add-ins"
+    },
+    "DisableApp": {
+      "any": "add-ins"
+    },
+    "GetOMEConfiguration": {
+      "any": "ome"
+    },
+    "SetOMEConfiguration": {
+      "any": "ome"
+    },
+    "GetUserRetentionPolicyTags": {
+      "any": "retention-tag-list"
+    },
+    "SearchMailboxes": {
+      "any": "ediscovery"
+    },
+    "GetSearchableMailboxes": {
+      "any": "ediscovery"
+    },
+    "GetDiscoverySearchConfiguration": {
+      "any": "ediscovery"
+    },
+    "GetHoldOnMailboxes": {
+      "any": "ediscovery"
+    },
+    "SetHoldOnMailboxes": {
+      "any": "ediscovery"
+    },
+    "GetNonIndexableItemStatistics": {
+      "any": "ediscovery"
+    },
+    "GetNonIndexableItemDetails": {
+      "any": "ediscovery"
+    },
+    "PlayOnPhone": {
+      "any": "unified-messaging"
+    },
+    "GetPhoneCallInformation": {
+      "any": "unified-messaging"
+    },
+    "DisconnectPhoneCall": {
+      "any": "unified-messaging"
+    },
+    "SetTeamMailbox": {
+      "any": "unified-messaging"
+    },
+    "UnpinTeamMailbox": {
+      "any": "unified-messaging"
+    },
+    "GetClientAccessToken": {
+      "any": "unified-messaging"
+    },
+    "GetUserUnifiedGroups": {
+      "any": "unified-groups"
+    },
+    "GetUnifiedGroupUnseenCount": {
+      "any": "unified-groups"
+    },
+    "SetUnifiedGroupLastVisitedTime": {
+      "any": "unified-groups"
+    }
+  }
+}

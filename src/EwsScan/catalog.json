@@ -1,0 +1,581 @@
+{
+  "operations": {
+    "FindItem": {
+      "graph": "GET /users/{id}/mailFolders/{id}/messages with $filter, $orderby, $top, $skip or $search; /calendarView for a CalendarView; /contacts; /todo/lists/{id}/tasks",
+      "note": "With both $filter and $orderby, the sort properties must also be in the filter, in the same order and first, or Graph answers InefficientFilter. $search returns at most 1,000 results and cannot be combined with $filter or $orderby. No filter or sort on body text, size, item class by prefix, DisplayTo, DisplayCc or bitmasks, and no sort by an extended property."
+    },
+    "GetItem": {
+      "graph": "GET /users/{id}/messages/{id}; events, contacts and To Do tasks have their own paths",
+      "note": "Bodies come as HTML unless the request sends Prefer: outlook.body-content-type=\"text\". Times have whole seconds only."
+    },
+    "CreateItem": {
+      "graph": "POST /users/{id}/messages; /events; /contacts; /todo/lists/{id}/tasks",
+      "note": "A message created from MIME becomes a draft. Creating a meeting with attendees always sends the invitations."
+    },
+    "CreateItem (reply, forward)": {
+      "soap": "CreateItem",
+      "coverage": "mail-replies",
+      "graph": "POST /users/{id}/messages/{id}/reply, replyAll, forward, createReply, createReplyAll, createForward"
+    },
+    "CreateItem (meeting response)": {
+      "soap": "CreateItem",
+      "coverage": "calendar-meetings",
+      "graph": "POST /users/{id}/events/{id}/accept, decline, tentativelyAccept, cancel",
+      "note": "Only a comment and sendResponse. Cc, Bcc, sensitivity and the folder for the saved response have no place to go."
+    },
+    "CreateItem (post)": {
+      "soap": "CreateItem",
+      "coverage": "posts",
+      "graph": "none",
+      "note": "Creating a post fails with ErrorObjectTypeChanged."
+    },
+    "CreateItem (SuppressReadReceipt)": {
+      "soap": "CreateItem",
+      "coverage": "mail-update",
+      "graph": "none",
+      "note": "Marking a message read sends the read receipt its sender asked for. There is no way to suppress it."
+    },
+    "UpdateItem": {
+      "graph": "PATCH /users/{id}/messages/{id}; /events/{id}; /contacts/{id}",
+      "note": "Marking a message read sends the read receipt its sender asked for. Changing a meeting notifies its attendees."
+    },
+    "DeleteItem": {
+      "graph": "DELETE /users/{id}/messages/{id}; POST .../permanentDelete",
+      "note": "DELETE puts the message in Deleted Items. permanentDelete matches HardDelete. For SoftDelete, move the message to recoverableitemsdeletions. Deleting a meeting sends the cancellation."
+    },
+    "MoveItem": {
+      "graph": "POST /users/{id}/messages/{id}/move",
+      "note": "The moved message gets a new ID unless you ask for immutable IDs. Events, contacts and tasks have no move."
+    },
+    "CopyItem": {
+      "graph": "POST /users/{id}/messages/{id}/copy",
+      "note": "Messages only. Events, contacts and tasks have no copy."
+    },
+    "SendItem": {
+      "graph": "POST /users/{id}/messages/{id}/send or POST /users/{id}/sendMail",
+      "note": "The copy always goes to Sent Items; sendMail can skip it with saveToSentItems: false, and neither call takes another folder. Both answer 202 with no ID."
+    },
+    "GetAttachment": {
+      "graph": "GET /users/{id}/messages/{id}/attachments/{id}"
+    },
+    "CreateAttachment": {
+      "graph": "POST /users/{id}/messages/{id}/attachments; createUploadSession for files over 3 MB",
+      "note": "An attached item that has attachments of its own is accepted and its inner attachments are dropped."
+    },
+    "DeleteAttachment": {
+      "graph": "DELETE /users/{id}/messages/{id}/attachments/{id}"
+    },
+    "Contact picture": {
+      "coverage": "contacts-write",
+      "graph": "/users/{id}/contacts/{id}/photo/$value"
+    },
+    "GetFolder": {
+      "graph": "GET /users/{id}/mailFolders/{id}; /calendars/{id}; /contactFolders/{id}",
+      "note": "Mail folders, calendars and contact folders are separate lists."
+    },
+    "FindFolder": {
+      "graph": "GET /users/{id}/mailFolders, .../childFolders (?includeHiddenFolders=true for hidden ones); /calendars; /contactFolders",
+      "note": "Mail folders, calendars and contact folders are separate lists."
+    },
+    "CreateFolder": {
+      "graph": "POST /users/{id}/mailFolders or .../childFolders"
+    },
+    "UpdateFolder": {
+      "graph": "PATCH /users/{id}/mailFolders/{id}"
+    },
+    "DeleteFolder": {
+      "graph": "DELETE /users/{id}/mailFolders/{id}"
+    },
+    "MoveFolder": {
+      "graph": "POST /users/{id}/mailFolders/{id}/move"
+    },
+    "CopyFolder": {
+      "graph": "POST /users/{id}/mailFolders/{id}/copy"
+    },
+    "EmptyFolder": {},
+    "MarkAllItemsAsRead": {},
+    "SyncFolderItems": {
+      "graph": "GET /users/{id}/mailFolders/{id}/messages/delta; /users/{id}/calendarView/delta for a calendar",
+      "note": "A SyncState from EWS means nothing to Graph: do one full sync per folder after the switch. Delta reports net changes. Calendar delta needs a date window and returns occurrences, not series masters."
+    },
+    "SyncFolderHierarchy": {
+      "graph": "GET /users/{id}/mailFolders/delta",
+      "note": "Mail folders only."
+    },
+    "Subscribe (pull)": {
+      "soap": "Subscribe",
+      "graph": "delta queries",
+      "note": "You poll, and you get net changes, not each event."
+    },
+    "Subscribe (push)": {
+      "soap": "Subscribe",
+      "coverage": "notifications-push",
+      "graph": "POST /subscriptions with a webhook URL",
+      "note": "Subscriptions expire and must be renewed; the webhook must be reachable from the internet."
+    },
+    "Subscribe (streaming)": {
+      "soap": "Subscribe",
+      "graph": "none",
+      "note": "No long-running connection. Use a webhook subscription or poll delta queries."
+    },
+    "GetEvents": {
+      "graph": "delta queries, for example GET /users/{id}/mailFolders/{id}/messages/delta",
+      "note": "You poll, and you get net changes, not each event."
+    },
+    "GetStreamingEvents": {
+      "graph": "none",
+      "note": "No long-running connection. Use a webhook subscription or poll delta queries."
+    },
+    "Unsubscribe": {
+      "graph": "DELETE /subscriptions/{id} for a webhook subscription"
+    },
+    "ConvertId": {
+      "graph": "POST /users/{id}/translateExchangeIds",
+      "note": "Up to 1,000 IDs per call. Ask for immutable IDs (Prefer: IdType=\"ImmutableId\") if you store IDs."
+    },
+    "ResolveNames": {
+      "graph": "GET /users/{id}/people (Microsoft's mapping) or GET /users?$search=\"displayName:...\" with ConsistencyLevel: eventual",
+      "note": "Matching rules differ from EWS ambiguous name resolution."
+    },
+    "ExpandDL": {
+      "graph": "GET /groups/{id}/members or transitiveMembers",
+      "note": "Groups are found by ID, not by SMTP address; look the group up first."
+    },
+    "GetUserAvailability": {
+      "graph": "POST /users/{id}/calendar/getSchedule",
+      "note": "Other people's calendars come at free/busy level only."
+    },
+    "GetRoomLists": {
+      "graph": "GET /places/microsoft.graph.roomlist"
+    },
+    "GetRooms": {
+      "graph": "GET /places/{room list address}/microsoft.graph.roomlist/rooms"
+    },
+    "GetUserOofSettings": {
+      "graph": "GET /users/{id}/mailboxSettings (automaticRepliesSetting)",
+      "note": "No AllowExternalOof, and no language for the reply text."
+    },
+    "SetUserOofSettings": {
+      "graph": "PATCH /users/{id}/mailboxSettings (automaticRepliesSetting)",
+      "note": "No AllowExternalOof, and no language for the reply text."
+    },
+    "GetInboxRules": {
+      "graph": "GET /users/{id}/mailFolders/inbox/messageRules",
+      "note": "WithinDateRange, FromConnectedAccounts, ItemClasses, MessageClassifications, SendSMSAlertToRecipients and ServerReplyWithMessage are missing."
+    },
+    "UpdateInboxRules": {
+      "graph": "POST, PATCH and DELETE /users/{id}/mailFolders/inbox/messageRules",
+      "note": "Updating a rule replaces all its conditions, exceptions and actions. WithinDateRange, FromConnectedAccounts, ItemClasses, MessageClassifications, SendSMSAlertToRecipients and ServerReplyWithMessage are missing."
+    },
+    "GetDelegate": {
+      "graph": "GET /users/{id}/calendar/calendarPermissions",
+      "note": "Calendar only. Delegate access to Inbox, Tasks, Contacts, Notes and Journal is not there."
+    },
+    "AddDelegate": {
+      "graph": "POST /users/{id}/calendar/calendarPermissions",
+      "note": "Calendar only. Delegate access to Inbox, Tasks, Contacts, Notes and Journal is not there."
+    },
+    "UpdateDelegate": {
+      "graph": "PATCH /users/{id}/calendar/calendarPermissions/{id}",
+      "note": "Calendar only. Delegate access to Inbox, Tasks, Contacts, Notes and Journal is not there."
+    },
+    "RemoveDelegate": {
+      "graph": "DELETE /users/{id}/calendar/calendarPermissions/{id}",
+      "note": "Calendar only. Delegate access to Inbox, Tasks, Contacts, Notes and Journal is not there."
+    },
+    "FindConversation": {},
+    "GetConversationItems": {},
+    "ApplyConversationAction": {},
+    "MarkAsJunk": {},
+    "FindPeople": {
+      "graph": "GET /users/{id}/people"
+    },
+    "GetPeopleInsights": {},
+    "GetUserPhoto": {
+      "graph": "GET /users/{id}/photo/$value"
+    },
+    "SetUserPhoto": {
+      "graph": "PUT /users/{id}/photo/$value"
+    },
+    "GetPasswordExpirationDate": {},
+    "GetUserConfiguration": {
+      "graph": "none; categories at /users/{id}/outlook/masterCategories, working hours in mailboxSettings",
+      "note": "Other configuration objects cannot be listed or created."
+    },
+    "UpdateUserConfiguration": {
+      "graph": "none; categories at /users/{id}/outlook/masterCategories, working hours in mailboxSettings",
+      "note": "Other configuration objects cannot be listed or created."
+    },
+    "CreateUserConfiguration": {},
+    "DeleteUserConfiguration": {},
+    "Autodiscover": {
+      "coverage": "autodiscover",
+      "graph": "not needed: every mailbox is reached at https://graph.microsoft.com"
+    },
+    "GetUserSettings": {
+      "graph": "not needed: every mailbox is reached at https://graph.microsoft.com"
+    },
+    "GetDomainSettings": {
+      "graph": "not needed: every mailbox is reached at https://graph.microsoft.com"
+    },
+    "ArchiveItem": {
+      "graph": "none in v1.0",
+      "note": "Online archives are not in v1.0; Microsoft's roadmap lists them for the end of 2026."
+    },
+    "GetAppManifests": {},
+    "GetClientExtension": {},
+    "SetClientExtension": {},
+    "InstallApp": {},
+    "UninstallApp": {},
+    "DisableApp": {},
+    "GetClientAccessToken": {},
+    "GetEncryptionConfiguration": { "coverage": "ome" },
+    "SetEncryptionConfiguration": { "coverage": "ome" },
+    "GetOMEConfiguration": {},
+    "SetOMEConfiguration": {},
+    "GetUserRetentionPolicyTags": {},
+    "SearchMailboxes": {},
+    "GetSearchableMailboxes": {},
+    "GetDiscoverySearchConfiguration": {},
+    "GetHoldOnMailboxes": {},
+    "SetHoldOnMailboxes": {},
+    "GetNonIndexableItemStatistics": {},
+    "GetNonIndexableItemDetails": {},
+    "SetTeamMailbox": {},
+    "UnpinTeamMailbox": {},
+    "GetUserUnifiedGroups": {
+      "graph": "GET /users/{id}/memberOf (Microsoft's mapping)"
+    },
+    "GetUnifiedGroupUnseenCount": {
+      "graph": "GET /groups/{id} (Microsoft's mapping)"
+    },
+    "SetUnifiedGroupLastVisitedTime": {}
+  },
+
+  "members": {
+    "ExchangeService.FindItems": "FindItem",
+    "ExchangeService.FindAppointments": "FindItem@calendar",
+    "ExchangeService.FindFolders": "FindFolder",
+    "ExchangeService.BindToItems": "GetItem",
+    "ExchangeService.LoadPropertiesForItems": "GetItem",
+    "ExchangeService.BindToFolders": "GetFolder",
+    "ExchangeService.CreateItems": "CreateItem",
+    "ExchangeService.UpdateItems": "UpdateItem",
+    "ExchangeService.DeleteItems": "DeleteItem",
+    "ExchangeService.MoveItems": "MoveItem",
+    "ExchangeService.CopyItems": "CopyItem",
+    "ExchangeService.GetAttachments": "GetAttachment",
+    "ExchangeService.SyncFolderItems": "SyncFolderItems",
+    "ExchangeService.SyncFolderHierarchy": "SyncFolderHierarchy",
+    "ExchangeService.SubscribeToPullNotifications": "Subscribe (pull)",
+    "ExchangeService.SubscribeToPullNotificationsOnAllFolders": "Subscribe (pull)",
+    "ExchangeService.SubscribeToPushNotifications": "Subscribe (push)",
+    "ExchangeService.SubscribeToPushNotificationsOnAllFolders": "Subscribe (push)",
+    "ExchangeService.SubscribeToStreamingNotifications": "Subscribe (streaming)",
+    "ExchangeService.SubscribeToStreamingNotificationsOnAllFolders": "Subscribe (streaming)",
+    "ExchangeService.ConvertId": "ConvertId",
+    "ExchangeService.ConvertIds": "ConvertId",
+    "ExchangeService.ResolveName": "ResolveNames",
+    "ExchangeService.ExpandGroup": "ExpandDL",
+    "ExchangeService.GetUserAvailability": "GetUserAvailability@calendar",
+    "ExchangeService.GetRoomLists": "GetRoomLists",
+    "ExchangeService.GetRooms": "GetRooms",
+    "ExchangeService.GetUserOofSettings": "GetUserOofSettings",
+    "ExchangeService.SetUserOofSettings": "SetUserOofSettings",
+    "ExchangeService.GetInboxRules": "GetInboxRules",
+    "ExchangeService.UpdateInboxRules": "UpdateInboxRules",
+    "ExchangeService.GetDelegates": "GetDelegate",
+    "ExchangeService.AddDelegates": "AddDelegate",
+    "ExchangeService.UpdateDelegates": "UpdateDelegate",
+    "ExchangeService.RemoveDelegates": "RemoveDelegate",
+    "ExchangeService.FindConversation": "FindConversation",
+    "ExchangeService.GetConversationItems": "GetConversationItems",
+    "ExchangeService.EnableAlwaysCategorizeItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.DisableAlwaysCategorizeItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.EnableAlwaysDeleteItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.DisableAlwaysDeleteItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.EnableAlwaysMoveItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.DisableAlwaysMoveItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.CopyItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.MoveItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.DeleteItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.SetReadStateForItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.SetRetentionPolicyForItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.SetFlagStatusForItemsInConversations": "ApplyConversationAction",
+    "ExchangeService.MarkAsJunk": "MarkAsJunk",
+    "ExchangeService.FindPeople": "FindPeople",
+    "ExchangeService.BrowsePeople": "FindPeople",
+    "ExchangeService.SearchPeople": "FindPeople",
+    "ExchangeService.GetPeopleInsights": "GetPeopleInsights",
+    "ExchangeService.GetUserPhoto": "GetUserPhoto",
+    "ExchangeService.SetUserPhoto": "SetUserPhoto",
+    "ExchangeService.GetPasswordExpirationDate": "GetPasswordExpirationDate",
+    "ExchangeService.AutodiscoverUrl": "Autodiscover",
+    "ExchangeService.ArchiveItems": "ArchiveItem",
+    "ExchangeService.GetAppManifests": "GetAppManifests",
+    "ExchangeService.GetClientExtension": "GetClientExtension",
+    "ExchangeService.SetClientExtension": "SetClientExtension",
+    "ExchangeService.InstallApp": "InstallApp",
+    "ExchangeService.UninstallApp": "UninstallApp",
+    "ExchangeService.DisableApp": "DisableApp",
+    "ExchangeService.GetClientAccessToken": "GetClientAccessToken",
+    "ExchangeService.GetEncryptionConfiguration": "GetEncryptionConfiguration",
+    "ExchangeService.SetEncryptionConfiguration": "SetEncryptionConfiguration",
+    "ExchangeService.GetOMEConfiguration": "GetOMEConfiguration",
+    "ExchangeService.SetOMEConfiguration": "SetOMEConfiguration",
+    "ExchangeService.GetUserRetentionPolicyTags": "GetUserRetentionPolicyTags",
+    "ExchangeService.SearchMailboxes": "SearchMailboxes",
+    "ExchangeService.GetSearchableMailboxes": "GetSearchableMailboxes",
+    "ExchangeService.GetDiscoverySearchConfiguration": "GetDiscoverySearchConfiguration",
+    "ExchangeService.GetHoldOnMailboxes": "GetHoldOnMailboxes",
+    "ExchangeService.SetHoldOnMailboxes": "SetHoldOnMailboxes",
+    "ExchangeService.GetNonIndexableItemStatistics": "GetNonIndexableItemStatistics",
+    "ExchangeService.GetNonIndexableItemDetails": "GetNonIndexableItemDetails",
+    "ExchangeService.SetTeamMailbox": "SetTeamMailbox",
+    "ExchangeService.UnpinTeamMailbox": "UnpinTeamMailbox",
+    "ExchangeService.GetUserUnifiedGroups": "GetUserUnifiedGroups",
+    "ExchangeService.GetUnifiedGroupUnseenCount": "GetUnifiedGroupUnseenCount",
+    "ExchangeService.SetUnifiedGroupLastVisitedTime": "SetUnifiedGroupLastVisitedTime",
+
+    "AutodiscoverService.GetUserSettings": "GetUserSettings",
+    "AutodiscoverService.GetUsersSettings": "GetUserSettings",
+    "AutodiscoverService.GetDomainSettings": "GetDomainSettings",
+
+    "ServiceObject.Load": "GetItem",
+    "Item.Bind": "GetItem",
+    "Item.Save": "CreateItem",
+    "Item.Update": "UpdateItem",
+    "Item.Delete": "DeleteItem",
+    "Item.Move": "MoveItem",
+    "Item.Copy": "CopyItem",
+
+    "EmailMessage.Bind": "GetItem@mail",
+    "EmailMessage.Send": "SendItem",
+    "EmailMessage.SendAndSaveCopy": "SendItem",
+    "EmailMessage.Reply": "CreateItem (reply, forward)",
+    "EmailMessage.CreateReply": "CreateItem (reply, forward)",
+    "EmailMessage.Forward": "CreateItem (reply, forward)",
+    "EmailMessage.CreateForward": "CreateItem (reply, forward)",
+    "EmailMessage.SuppressReadReceipt": "CreateItem (SuppressReadReceipt)",
+    "ResponseObject`1.Save": "CreateItem (reply, forward)",
+    "ResponseObject`1.Send": "CreateItem (reply, forward)",
+    "ResponseObject`1.SendAndSaveCopy": "CreateItem (reply, forward)",
+
+    "MeetingMessage.Bind": "GetItem@calendar",
+    "MeetingRequest.Bind": "GetItem@calendar",
+    "MeetingResponse.Bind": "GetItem@calendar",
+    "MeetingCancellation.Bind": "GetItem@calendar",
+    "MeetingRequest.Accept": "CreateItem (meeting response)",
+    "MeetingRequest.AcceptTentatively": "CreateItem (meeting response)",
+    "MeetingRequest.Decline": "CreateItem (meeting response)",
+    "MeetingRequest.CreateAcceptMessage": "CreateItem (meeting response)",
+    "MeetingRequest.CreateDeclineMessage": "CreateItem (meeting response)",
+    "MeetingCancellation.RemoveMeetingFromCalendar": "CreateItem (meeting response)",
+
+    "Appointment.Bind": "GetItem@calendar",
+    "Appointment.BindToOccurrence": "GetItem@calendar",
+    "Appointment.BindToRecurringMaster": "GetItem@calendar",
+    "Appointment.Save": "CreateItem@calendar",
+    "Appointment.Update": "UpdateItem@calendar",
+    "Appointment.Delete": "DeleteItem@calendar",
+    "Appointment.Accept": "CreateItem (meeting response)",
+    "Appointment.AcceptTentatively": "CreateItem (meeting response)",
+    "Appointment.Decline": "CreateItem (meeting response)",
+    "Appointment.CancelMeeting": "CreateItem (meeting response)",
+    "Appointment.CreateAcceptMessage": "CreateItem (meeting response)",
+    "Appointment.CreateDeclineMessage": "CreateItem (meeting response)",
+    "Appointment.CreateCancelMeetingMessage": "CreateItem (meeting response)",
+    "Appointment.Reply": "CreateItem (reply, forward)",
+    "Appointment.CreateReply": "CreateItem (reply, forward)",
+    "Appointment.Forward": "CreateItem (reply, forward)",
+    "Appointment.CreateForward": "CreateItem (reply, forward)",
+    "CalendarResponseMessageBase`1.Save": "CreateItem (meeting response)",
+    "CalendarResponseMessageBase`1.Send": "CreateItem (meeting response)",
+    "CalendarResponseMessageBase`1.SendAndSaveCopy": "CreateItem (meeting response)",
+
+    "Contact.Bind": "GetItem@contacts",
+    "ContactGroup.Bind": "GetItem@contacts",
+    "Contact.SetContactPicture": "Contact picture",
+    "Contact.GetContactPictureAttachment": "Contact picture",
+    "Contact.RemoveContactPicture": "Contact picture",
+
+    "Task.Bind": "GetItem@tasks",
+    "Task.Update": "UpdateItem@tasks",
+    "Task.DeleteCurrentOccurrence": "DeleteItem@tasks",
+
+    "PostItem.Bind": "GetItem@mail",
+    "PostItem.PostReply": "CreateItem (post)",
+    "PostItem.CreatePostReply": "CreateItem (post)",
+    "PostItem.Reply": "CreateItem (reply, forward)",
+    "PostItem.CreateReply": "CreateItem (reply, forward)",
+    "PostItem.Forward": "CreateItem (reply, forward)",
+    "PostItem.CreateForward": "CreateItem (reply, forward)",
+    "PostReply.Save": "CreateItem (post)",
+    "PostItem..ctor": "CreateItem (post)",
+
+    "Attachment.Load": "GetAttachment",
+    "FileAttachment.Load": "GetAttachment",
+    "ItemAttachment.Load": "GetAttachment",
+    "AttachmentCollection.AddFileAttachment": "CreateAttachment",
+    "AttachmentCollection.AddItemAttachment": "CreateAttachment",
+    "AttachmentCollection.Remove": "DeleteAttachment",
+    "AttachmentCollection.RemoveAt": "DeleteAttachment",
+    "AttachmentCollection.Clear": "DeleteAttachment",
+
+    "Folder.Bind": "GetFolder",
+    "CalendarFolder.Bind": "GetFolder@calendar",
+    "ContactsFolder.Bind": "GetFolder@contacts",
+    "TasksFolder.Bind": "GetFolder@tasks",
+    "SearchFolder.Bind": "GetFolder@mail",
+    "Folder.FindItems": "FindItem",
+    "CalendarFolder.FindAppointments": "FindItem@calendar",
+    "Folder.FindFolders": "FindFolder",
+    "Folder.Save": "CreateFolder",
+    "Folder.Update": "UpdateFolder",
+    "Folder.Delete": "DeleteFolder",
+    "Folder.Move": "MoveFolder",
+    "Folder.Copy": "CopyFolder",
+    "Folder.Empty": "EmptyFolder",
+    "Folder.MarkAllItemsAsRead": "MarkAllItemsAsRead",
+    "Folder.MarkAllItemsAsUnread": "MarkAllItemsAsRead",
+
+    "PullSubscription.GetEvents": "GetEvents",
+    "PullSubscription.Unsubscribe": "Unsubscribe",
+    "StreamingSubscription.Unsubscribe": "Unsubscribe",
+    "StreamingSubscriptionConnection.Open": "GetStreamingEvents",
+
+    "Conversation.ClearItemFlags": "ApplyConversationAction",
+    "Conversation.CopyItemsInConversation": "ApplyConversationAction",
+    "Conversation.DeleteItems": "ApplyConversationAction",
+    "Conversation.DisableAlwaysCategorizeItems": "ApplyConversationAction",
+    "Conversation.DisableAlwaysDeleteItems": "ApplyConversationAction",
+    "Conversation.DisableAlwaysMoveItemsInConversation": "ApplyConversationAction",
+    "Conversation.EnableAlwaysCategorizeItems": "ApplyConversationAction",
+    "Conversation.EnableAlwaysDeleteItems": "ApplyConversationAction",
+    "Conversation.EnableAlwaysMoveItems": "ApplyConversationAction",
+    "Conversation.FlagItems": "ApplyConversationAction",
+    "Conversation.FlagItemsComplete": "ApplyConversationAction",
+    "Conversation.MoveItemsInConversation": "ApplyConversationAction",
+    "Conversation.SetReadStateForItemsInConversation": "ApplyConversationAction",
+    "Conversation.SetRetentionPolicyForItemsInConversation": "ApplyConversationAction",
+
+    "UserConfiguration.Bind": "GetUserConfiguration",
+    "UserConfiguration.Load": "GetUserConfiguration",
+    "UserConfiguration.Save": "CreateUserConfiguration",
+    "UserConfiguration.Update": "UpdateUserConfiguration",
+    "UserConfiguration.Delete": "DeleteUserConfiguration"
+  },
+
+  "workloads": {
+    "EmailMessage": "mail",
+    "Appointment": "calendar",
+    "MeetingRequest": "calendar",
+    "MeetingResponse": "calendar",
+    "MeetingCancellation": "calendar",
+    "CalendarFolder": "calendar",
+    "CalendarView": "calendar",
+    "Contact": "contacts",
+    "ContactGroup": "contacts",
+    "ContactsFolder": "contacts",
+    "Task": "tasks",
+    "TasksFolder": "tasks"
+  },
+
+  "signals": [
+    {
+      "id": "public-folders",
+      "title": "Public folders",
+      "enums": [ "WellKnownFolderName" ],
+      "values": [ "PublicFoldersRoot" ],
+      "coverage": "public-folders",
+      "graph": "none",
+      "note": "Graph has no API for public folders or their items."
+    },
+    {
+      "id": "archive",
+      "title": "Online archive mailbox",
+      "enums": [ "WellKnownFolderName" ],
+      "values": [ "ArchiveRoot", "ArchiveInbox", "ArchiveMsgFolderRoot", "ArchiveDeletedItems", "ArchiveRecoverableItemsRoot", "ArchiveRecoverableItemsDeletions", "ArchiveRecoverableItemsVersions", "ArchiveRecoverableItemsPurges", "ArchiveRecoverableItemsDiscoveryHolds" ],
+      "coverage": "archive",
+      "graph": "none in v1.0",
+      "note": "Online archives are not in v1.0; Microsoft's roadmap lists them for the end of 2026."
+    },
+    {
+      "id": "silent-meetings",
+      "title": "SendToNone on appointments",
+      "enums": [ "SendInvitationsMode", "SendCancellationsMode", "SendInvitationsOrCancellationsMode" ],
+      "values": [ "SendToNone" ],
+      "coverage": "calendar-meetings",
+      "graph": "none",
+      "note": "When a meeting has attendees, Graph sends them the invitation, update or cancellation; there is no switch for silent changes. Appointments without attendees are not affected."
+    },
+    {
+      "id": "extended-properties",
+      "title": "Extended properties",
+      "types": [ "ExtendedPropertyDefinition" ],
+      "graph": "$expand=singleValueExtendedProperties($filter=id eq '...'), multiValueExtendedProperties",
+      "note": "A filter that only tests whether a property exists needs a value condition, such as ep/value ne null. Binary properties cannot be filtered. $search results ignore $expand, so read the properties in a second request."
+    },
+    {
+      "id": "mime",
+      "title": "MimeContent",
+      "members": [ "ItemSchema.MimeContent", "Item.get_MimeContent", "Item.set_MimeContent" ],
+      "coverage": "mail-mime",
+      "graph": "GET /users/{id}/messages/{id}/$value",
+      "note": "Creating a message from MIME makes a draft; it cannot become a received message this way."
+    },
+    {
+      "id": "impersonation",
+      "title": "Impersonation",
+      "types": [ "ImpersonatedUserId" ],
+      "coverage": "auth",
+      "graph": "the mailbox in the URL: /users/{id}/...",
+      "note": "Limit which mailboxes the app can open with RBAC for Applications in Exchange Online."
+    },
+    {
+      "id": "contact-groups",
+      "title": "Contact groups",
+      "types": [ "ContactGroup" ],
+      "coverage": "contacts-groups",
+      "graph": "none in v1.0",
+      "note": "Personal distribution lists have no API; Microsoft's roadmap lists them as planned."
+    },
+    {
+      "id": "tasks",
+      "title": "Tasks",
+      "types": [ "Task" ],
+      "coverage": "tasks",
+      "graph": "/users/{id}/todo/lists/{id}/tasks (Microsoft To Do)",
+      "note": "No extended properties. Progress is a status, so a percent complete of 25 is lost. No mileage, billing or work fields."
+    },
+    {
+      "id": "search-folders",
+      "title": "Search folders",
+      "types": [ "SearchFolder" ],
+      "coverage": "search-folders",
+      "graph": "POST /users/{id}/mailFolders/{id}/childFolders with a mailSearchFolder"
+    },
+    {
+      "id": "password-sign-in",
+      "title": "Sign-in with a user name and password (WebCredentials)",
+      "types": [ "WebCredentials" ],
+      "note": "Exchange Online no longer accepts Basic authentication for EWS, so code that signs in this way talks to Exchange Server. Exchange Server keeps EWS."
+    },
+    {
+      "id": "oauth-sign-in",
+      "title": "Sign-in with OAuth (OAuthCredentials)",
+      "types": [ "OAuthCredentials" ],
+      "note": "This is how EWS code signs in to Exchange Online. Graph uses the same app registration with Graph permissions in place of the EWS ones."
+    }
+  ],
+
+  "enumFallback": {
+    "WellKnownFolderName": {
+      "microsoft": [ "Calendar", "Contacts", "DeletedItems", "Drafts", "Inbox", "Journal", "Notes", "Outbox", "SentItems", "Tasks", "MsgFolderRoot", "PublicFoldersRoot", "Root", "JunkEmail", "SearchFolders", "VoiceMail", "RecoverableItemsRoot", "RecoverableItemsDeletions", "RecoverableItemsVersions", "RecoverableItemsPurges", "ArchiveRoot", "ArchiveMsgFolderRoot", "ArchiveDeletedItems", "ArchiveRecoverableItemsRoot", "ArchiveRecoverableItemsDeletions", "ArchiveRecoverableItemsVersions", "ArchiveRecoverableItemsPurges", "SyncIssues", "Conflicts", "LocalFailures", "ServerFailures", "RecipientCache", "QuickContacts", "ConversationHistory", "ToDoSearch" ],
+      "other": [ "Calendar", "Contacts", "DeletedItems", "Drafts", "Inbox", "Journal", "Notes", "Outbox", "SentItems", "Tasks", "MsgFolderRoot", "PublicFoldersRoot", "Root", "JunkEmail", "SearchFolders", "VoiceMail", "RecoverableItemsRoot", "RecoverableItemsDeletions", "RecoverableItemsVersions", "RecoverableItemsPurges", "RecoverableItemsDiscoveryHolds", "ArchiveRoot", "ArchiveInbox", "ArchiveMsgFolderRoot", "ArchiveDeletedItems", "ArchiveRecoverableItemsRoot", "ArchiveRecoverableItemsDeletions", "ArchiveRecoverableItemsVersions", "ArchiveRecoverableItemsPurges", "ArchiveRecoverableItemsDiscoveryHolds", "SyncIssues", "Conflicts", "LocalFailures", "ServerFailures", "RecipientCache", "QuickContacts", "ConversationHistory", "AdminAuditLogs", "ToDoSearch", "MyContacts", "Directory", "IMContactList", "PeopleConnect", "Favorites" ]
+    },
+    "SendInvitationsMode": { "other": [ "SendToNone" ] },
+    "SendCancellationsMode": { "other": [ "SendToNone" ] },
+    "SendInvitationsOrCancellationsMode": { "other": [ "SendToNone" ] }
+  }
+}
