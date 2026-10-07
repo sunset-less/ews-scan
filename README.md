@@ -1,4 +1,20 @@
-# ews-scan
+<p align="center">
+  <a href="https://sunsetless.com">
+    <img alt="Sunsetless" src="https://raw.githubusercontent.com/sunset-less/ews-scan/main/.github/assets/logo.svg" width="314">
+  </a>
+  <br>
+  <a href="https://sunsetless.com">sunsetless.com</a>
+</p>
+
+<h1 align="center">ews-scan</h1>
+
+<p align="center">
+  <a href="https://www.nuget.org/packages/Sunsetless.EwsScan"><img alt="NuGet" src="https://img.shields.io/nuget/v/Sunsetless.EwsScan?logo=nuget&label=NuGet&color=635BFF"></a>
+  <a href="https://www.nuget.org/packages/Sunsetless.EwsScan"><img alt=".NET 8 or later" src="https://img.shields.io/badge/.NET-8%2B-512BD4?logo=dotnet&logoColor=white"></a>
+  <a href="https://sunsetless.com/compatibility"><img alt="EWS Managed API to Microsoft Graph" src="https://img.shields.io/badge/EWS%20Managed%20API-to%20Microsoft%20Graph-0078D4"></a>
+  <a href="https://github.com/sunset-less/ews-scan/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/sunset-less/ews-scan?logo=github&label=issues"></a>
+  <a href="https://github.com/sunset-less/ews-scan/blob/main/LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-lightgrey"></a>
+</p>
 
 `ews-scan` lists the EWS Managed API calls in compiled .NET code and shows what each EWS operation becomes in Microsoft Graph.
 
