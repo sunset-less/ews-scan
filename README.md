@@ -61,7 +61,7 @@ Public folders
   Sunsetless  Not possible in Graph
 ```
 
-The second part, "Also in this code", lists things that change the size of a migration and that the operation names do not show: public folders, archive mailboxes, `SendToNone` on appointments, extended properties, MIME content, impersonation, contact groups, tasks, search folders, and how the code signs in.
+The second part, "Also in this code", lists things that change the size of a migration and that the operation names do not show: public folders, archive mailboxes, `SendToNone` on appointments, extended properties, MIME content, impersonation, contact groups, tasks, search folders, and how the code signs in: OAuth for Exchange Online, or a password or the Windows account for Exchange Server.
 
 ## Options
 
@@ -77,7 +77,7 @@ The second part, "Also in this code", lists things that change the size of a mig
 
 The tool reads the metadata and the IL of each assembly with `System.Reflection.Metadata`. It does not load or run the code, and it makes no network requests. Because it reads IL, the source language does not matter: C#, VB.NET and F# all work.
 
-It recognizes code built against Microsoft's `Microsoft.Exchange.WebServices` package and against the .NET Standard port, `Microsoft.Exchange.WebServices.NETStandard`.
+It recognizes code built against Microsoft's `Microsoft.Exchange.WebServices` package, against the .NET Standard port, `Microsoft.Exchange.WebServices.NETStandard`, and against Sunsetless EWS, which the Library line marks with "(Sunsetless EWS)". The assemblies can target any version of .NET Framework from 2.0 to 4.8, .NET Standard, or .NET.
 
 ## What it cannot see
 

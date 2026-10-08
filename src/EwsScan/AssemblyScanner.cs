@@ -35,6 +35,7 @@ internal sealed partial class AssemblyScanner(Catalog catalog)
     private const string EwsNamespace = "Microsoft.Exchange.WebServices";
     private const string DataNamespace = EwsNamespace + ".Data";
     private static readonly byte[] MicrosoftKeyToken = [0x31, 0xbf, 0x38, 0x56, 0xad, 0x36, 0x4e, 0x35];
+    private static readonly byte[] SunsetlessKeyToken = [0x1b, 0x8c, 0x25, 0xc6, 0xfc, 0x94, 0xdc, 0xf1];
 
     private static readonly OpCode?[] OneByte = new OpCode?[256];
     private static readonly OpCode?[] TwoByte = new OpCode?[256];
@@ -102,16 +103,17 @@ internal sealed partial class AssemblyScanner(Catalog catalog)
 
         var library = reader.GetAssemblyReference(libraryHandle);
         var libraryName = reader.GetString(library.Name);
+        var token = reader.GetBlobBytes(library.PublicKeyOrToken);
+        var fromSunsetless = token.AsSpan().SequenceEqual(SunsetlessKeyToken);
         var usage = new AssemblyUsage
         {
             Path = path,
             Name = reader.GetString(reader.GetAssemblyDefinition().Name),
-            Library = $"{libraryName} {library.Version}",
+            Library = $"{libraryName} {library.Version}{(fromSunsetless ? " (Sunsetless EWS)" : "")}",
         };
         usage.Types.UnionWith(types);
 
-        var fromMicrosoft = reader.GetBlobBytes(library.PublicKeyOrToken).AsSpan().SequenceEqual(MicrosoftKeyToken);
-        var walk = new Walk(reader, usage, EnumNames(System.IO.Path.GetDirectoryName(path)!, libraryName, fromMicrosoft), trackedEnums);
+        var walk = new Walk(reader, usage, EnumNames(System.IO.Path.GetDirectoryName(path)!, libraryName, Numbering(libraryName, token)), trackedEnums);
         foreach (var handle in reader.MethodDefinitions)
         {
             var method = reader.GetMethodDefinition(handle);
@@ -131,6 +133,18 @@ internal sealed partial class AssemblyScanner(Catalog catalog)
             }
         }
         return usage;
+    }
+
+    /// <summary>Which enum numbering the library uses, by its public key token: "microsoft", "sunsetless" or "other".</summary>
+    internal static string Numbering(string libraryName, byte[] publicKeyToken)
+    {
+        if (publicKeyToken.AsSpan().SequenceEqual(MicrosoftKeyToken))
+        {
+            return "microsoft";
+        }
+
+        // Sunsetless.Ews numbers like Microsoft's package and adds the names the public source has; the .NET Standard port keeps the port's numbers.
+        return publicKeyToken.AsSpan().SequenceEqual(SunsetlessKeyToken) && libraryName == EwsNamespace ? "sunsetless" : "other";
     }
 
     private static bool IsEws(string @namespace) =>
@@ -154,7 +168,7 @@ internal sealed partial class AssemblyScanner(Catalog catalog)
     private static partial Regex GeneratedName();
 
     /// <summary>The names of the tracked enum values, read from the EWS library next to the assembly when it is there.</summary>
-    private Dictionary<string, Dictionary<int, string>> EnumNames(string folder, string libraryName, bool fromMicrosoft)
+    private Dictionary<string, Dictionary<int, string>> EnumNames(string folder, string libraryName, string numbering)
     {
         var names = new Dictionary<string, Dictionary<int, string>>();
         var file = System.IO.Path.Combine(folder, libraryName + ".dll");
@@ -189,12 +203,12 @@ internal sealed partial class AssemblyScanner(Catalog catalog)
             }
         }
 
-        // Microsoft's package and the builds made from the public source number WellKnownFolderName differently.
+        // Microsoft's package, Sunsetless.Ews and the builds made from the public source number WellKnownFolderName differently.
         foreach (var (name, variants) in catalog.EnumFallback)
         {
             if (!names.ContainsKey(name))
             {
-                var list = fromMicrosoft && variants.TryGetValue("microsoft", out var signed) ? signed : variants["other"];
+                var list = variants.TryGetValue(numbering, out var own) ? own : variants["other"];
                 names[name] = list.Select((value, index) => (value, index)).ToDictionary(pair => pair.index, pair => pair.value);
             }
         }

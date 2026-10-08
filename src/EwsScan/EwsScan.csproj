@@ -15,7 +15,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>ews-scan</ToolCommandName>
     <PackageId>Sunsetless.EwsScan</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>Sunsetless</Authors>
     <Description>Lists the EWS Managed API calls in compiled .NET assemblies and shows what each EWS operation becomes in Microsoft Graph.</Description>
     <PackageTags>ews;ews-managed-api;exchange-web-services;microsoft-graph;exchange-online;ews-retirement;migration</PackageTags>

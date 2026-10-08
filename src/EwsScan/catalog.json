@@ -6,7 +6,7 @@
     },
     "GetItem": {
       "graph": "GET /users/{id}/messages/{id}; events, contacts and To Do tasks have their own paths",
-      "note": "Bodies come as HTML unless the request sends Prefer: outlook.body-content-type=\"text\". Times have whole seconds only."
+      "note": "A plain-text body comes as text and an HTML body as HTML, as with BodyType.Best. For one format, send Prefer: outlook.body-content-type=\"text\" or \"html\". Times have whole seconds only."
     },
     "CreateItem": {
       "graph": "POST /users/{id}/messages; /events; /contacts; /todo/lists/{id}/tasks",
@@ -559,7 +559,15 @@
       "id": "password-sign-in",
       "title": "Sign-in with a user name and password (WebCredentials)",
       "types": [ "WebCredentials" ],
-      "note": "Exchange Online no longer accepts Basic authentication for EWS, so code that signs in this way talks to Exchange Server. Exchange Server keeps EWS."
+      "coverage": "hybrid",
+      "note": "Exchange Online no longer accepts Basic authentication for EWS, so code that signs in this way talks to Exchange Server. Exchange Server keeps EWS. For mailboxes that have moved to Exchange Online, Graph needs an app registration instead."
+    },
+    {
+      "id": "windows-sign-in",
+      "title": "Sign-in as the Windows account (UseDefaultCredentials)",
+      "members": [ "ExchangeServiceBase.set_UseDefaultCredentials" ],
+      "coverage": "hybrid",
+      "note": "Exchange Online does not accept Windows sign-in for EWS, so code that signs in this way talks to Exchange Server. Exchange Server keeps EWS. For mailboxes that have moved to Exchange Online, Graph needs an app registration instead."
     },
     {
       "id": "oauth-sign-in",
@@ -572,6 +580,7 @@
   "enumFallback": {
     "WellKnownFolderName": {
       "microsoft": [ "Calendar", "Contacts", "DeletedItems", "Drafts", "Inbox", "Journal", "Notes", "Outbox", "SentItems", "Tasks", "MsgFolderRoot", "PublicFoldersRoot", "Root", "JunkEmail", "SearchFolders", "VoiceMail", "RecoverableItemsRoot", "RecoverableItemsDeletions", "RecoverableItemsVersions", "RecoverableItemsPurges", "ArchiveRoot", "ArchiveMsgFolderRoot", "ArchiveDeletedItems", "ArchiveRecoverableItemsRoot", "ArchiveRecoverableItemsDeletions", "ArchiveRecoverableItemsVersions", "ArchiveRecoverableItemsPurges", "SyncIssues", "Conflicts", "LocalFailures", "ServerFailures", "RecipientCache", "QuickContacts", "ConversationHistory", "ToDoSearch" ],
+      "sunsetless": [ "Calendar", "Contacts", "DeletedItems", "Drafts", "Inbox", "Journal", "Notes", "Outbox", "SentItems", "Tasks", "MsgFolderRoot", "PublicFoldersRoot", "Root", "JunkEmail", "SearchFolders", "VoiceMail", "RecoverableItemsRoot", "RecoverableItemsDeletions", "RecoverableItemsVersions", "RecoverableItemsPurges", "ArchiveRoot", "ArchiveMsgFolderRoot", "ArchiveDeletedItems", "ArchiveRecoverableItemsRoot", "ArchiveRecoverableItemsDeletions", "ArchiveRecoverableItemsVersions", "ArchiveRecoverableItemsPurges", "SyncIssues", "Conflicts", "LocalFailures", "ServerFailures", "RecipientCache", "QuickContacts", "ConversationHistory", "ToDoSearch", "RecoverableItemsDiscoveryHolds", "ArchiveInbox", "ArchiveRecoverableItemsDiscoveryHolds", "AdminAuditLogs", "MyContacts", "Directory", "IMContactList", "PeopleConnect", "Favorites" ],
       "other": [ "Calendar", "Contacts", "DeletedItems", "Drafts", "Inbox", "Journal", "Notes", "Outbox", "SentItems", "Tasks", "MsgFolderRoot", "PublicFoldersRoot", "Root", "JunkEmail", "SearchFolders", "VoiceMail", "RecoverableItemsRoot", "RecoverableItemsDeletions", "RecoverableItemsVersions", "RecoverableItemsPurges", "RecoverableItemsDiscoveryHolds", "ArchiveRoot", "ArchiveInbox", "ArchiveMsgFolderRoot", "ArchiveDeletedItems", "ArchiveRecoverableItemsRoot", "ArchiveRecoverableItemsDeletions", "ArchiveRecoverableItemsVersions", "ArchiveRecoverableItemsPurges", "ArchiveRecoverableItemsDiscoveryHolds", "SyncIssues", "Conflicts", "LocalFailures", "ServerFailures", "RecipientCache", "QuickContacts", "ConversationHistory", "AdminAuditLogs", "ToDoSearch", "MyContacts", "Directory", "IMContactList", "PeopleConnect", "Favorites" ]
     },
     "SendInvitationsMode": { "other": [ "SendToNone" ] },

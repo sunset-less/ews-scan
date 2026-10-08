@@ -59,8 +59,9 @@ public class ScannerTests
         var report = Report(Fixture("ClassicApp"));
 
         Assert.Equal(
-            ["public-folders", "archive", "silent-meetings", "mime", "tasks", "password-sign-in"],
+            ["public-folders", "archive", "silent-meetings", "mime", "tasks", "password-sign-in", "windows-sign-in"],
             report.Signals.Select(signal => signal.Id));
+        Assert.Equal(["ExchangeServiceBase.set_UseDefaultCredentials"], Evidence(report, "windows-sign-in"));
         Assert.Equal(["WellKnownFolderName.PublicFoldersRoot"], Evidence(report, "public-folders"));
         Assert.Equal(["WellKnownFolderName.ArchiveMsgFolderRoot"], Evidence(report, "archive"));
         Assert.Equal(["SendInvitationsMode.SendToNone", "SendCancellationsMode.SendToNone"], Evidence(report, "silent-meetings"));
@@ -108,6 +109,24 @@ public class ScannerTests
         {
             Directory.Delete(folder, recursive: true);
         }
+    }
+
+    [Theory]
+    [InlineData("Microsoft.Exchange.WebServices", "31bf3856ad364e35", "microsoft")]
+    [InlineData("Microsoft.Exchange.WebServices", "1b8c25c6fc94dcf1", "sunsetless")]
+    [InlineData("Microsoft.Exchange.WebServices", "", "other")]
+    [InlineData("Microsoft.Exchange.WebServices.NETStandard", "1b8c25c6fc94dcf1", "other")]
+    [InlineData("Microsoft.Exchange.WebServices.NETStandard", "", "other")]
+    public void TheEnumNumberingFollowsWhoBuiltTheLibrary(string library, string token, string numbering) =>
+        Assert.Equal(numbering, AssemblyScanner.Numbering(library, Convert.FromHexString(token)));
+
+    [Fact]
+    public void SunsetlessNumbersFoldersLikeMicrosoftAndKeepsEveryName()
+    {
+        var folders = Catalog.EnumFallback["WellKnownFolderName"];
+
+        Assert.Equal(folders["microsoft"], folders["sunsetless"].Take(folders["microsoft"].Length));
+        Assert.Equal(folders["other"].Order(), folders["sunsetless"].Order());
     }
 
     [Fact]

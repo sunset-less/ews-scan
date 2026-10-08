@@ -57,4 +57,10 @@ public class Sync
     }
 
     public string MarketplaceUrl() => service.GetAppMarketplaceUrl();
+
+    public ExchangeService OnPremises() => new(ExchangeVersion.Exchange2010_SP2)
+    {
+        UseDefaultCredentials = true,
+        Url = new Uri("https://mail.example.com/EWS/Exchange.asmx"),
+    };
 }
