@@ -23,7 +23,7 @@ internal static class ReportWriter
     {
         var text = new StringBuilder();
         text.AppendLine($"ews-scan {version}");
-        text.AppendLine($"Scanned {Count(report.FilesScanned, "file")} in {report.Root}. {Summary(report)}");
+        text.AppendLine($"Scanned {Count(report.FilesScanned, "file")} in {Clean(report.Root)}. {Summary(report)}");
         if (report.Assemblies.Count == 0)
         {
             text.AppendLine();
@@ -34,8 +34,8 @@ internal static class ReportWriter
         foreach (var assembly in report.Assemblies)
         {
             text.AppendLine();
-            text.AppendLine($"== {assembly.Name} ({Location(report, assembly)})");
-            Line(text, "Library", assembly.Library, width);
+            text.AppendLine($"== {Clean(assembly.Name)} ({Clean(Location(report, assembly))})");
+            Line(text, "Library", Clean(assembly.Library), width);
             if (assembly.Workloads.Count > 0)
             {
                 Line(text, "Works with", string.Join(", ", assembly.Workloads), width);
@@ -45,7 +45,7 @@ internal static class ReportWriter
             {
                 text.AppendLine();
                 text.AppendLine($"{operation.Operation}, {Count(operation.CallSites, "call site")}");
-                Line(text, "Calls", Members(operation.Members, callers), width);
+                Line(text, "Calls", Members(operation.Members, callers, Clean), width);
                 Line(text, "Graph", operation.Graph, width);
                 Line(text, "Watch for", operation.Note, width);
                 Line(text, "Sunsetless", Status(operation.Coverage, catalog, link: false), width);
@@ -60,7 +60,7 @@ internal static class ReportWriter
             {
                 text.AppendLine();
                 text.AppendLine(signal.Title);
-                Line(text, "Found", Members(signal.Evidence, callers), width);
+                Line(text, "Found", Members(signal.Evidence, callers, Clean), width);
                 Line(text, "Graph", signal.Graph, width);
                 Line(text, "Watch for", signal.Note, width);
                 Line(text, "Sunsetless", signal.Coverage.Count > 0 ? Status(signal.Coverage, catalog, link: false) : null, width);
@@ -70,7 +70,7 @@ internal static class ReportWriter
             {
                 text.AppendLine();
                 text.AppendLine("ExchangeService calls this version does not know");
-                Line(text, "Calls", Members(assembly.Unrecognized, callers), width);
+                Line(text, "Calls", Members(assembly.Unrecognized, callers, Clean), width);
             }
 
             text.AppendLine();
@@ -88,21 +88,21 @@ internal static class ReportWriter
         var text = new StringBuilder();
         text.AppendLine("# EWS Managed API usage");
         text.AppendLine();
-        text.AppendLine($"Scanned {Count(report.FilesScanned, "file")} in `{report.Root}`. {Summary(report)}");
+        text.AppendLine($"Scanned {Count(report.FilesScanned, "file")} in {Code(report.Root)}. {Summary(report)}");
 
         foreach (var assembly in report.Assemblies)
         {
             text.AppendLine();
-            text.AppendLine($"## {assembly.Name}");
+            text.AppendLine($"## {Escape(assembly.Name)}");
             text.AppendLine();
-            text.AppendLine($"`{Location(report, assembly)}`, built against {assembly.Library}."
+            text.AppendLine($"{Code(Location(report, assembly))}, built against {Escape(assembly.Library)}."
                 + (assembly.Workloads.Count > 0 ? $" Works with {string.Join(", ", assembly.Workloads)}." : ""));
             text.AppendLine();
             text.AppendLine("| EWS operation | Call sites | Calls | Microsoft Graph | Watch out for | Sunsetless EWS |");
             text.AppendLine("|---|---|---|---|---|---|");
             foreach (var operation in assembly.Operations)
             {
-                text.AppendLine(Cells(operation.Operation, operation.CallSites.ToString(), Members(operation.Members, callers), operation.Graph, operation.Note, Status(operation.Coverage, catalog, link: true)));
+                text.AppendLine(Cells(operation.Operation, operation.CallSites.ToString(), Members(operation.Members, callers, Escape), operation.Graph, operation.Note, Status(operation.Coverage, catalog, link: true)));
             }
 
             if (assembly.Signals.Count > 0)
@@ -112,14 +112,14 @@ internal static class ReportWriter
                 text.AppendLine("|---|---|---|---|---|");
                 foreach (var signal in assembly.Signals)
                 {
-                    text.AppendLine(Cells(signal.Title, Members(signal.Evidence, callers), signal.Graph, signal.Note, signal.Coverage.Count > 0 ? Status(signal.Coverage, catalog, link: true) : ""));
+                    text.AppendLine(Cells(signal.Title, Members(signal.Evidence, callers, Escape), signal.Graph, signal.Note, signal.Coverage.Count > 0 ? Status(signal.Coverage, catalog, link: true) : ""));
                 }
             }
 
             if (assembly.Unrecognized.Count > 0)
             {
                 text.AppendLine();
-                text.AppendLine($"ExchangeService calls this version does not know: {Members(assembly.Unrecognized, callers)}.");
+                text.AppendLine($"ExchangeService calls this version does not know: {Members(assembly.Unrecognized, callers, Escape)}.");
             }
 
             text.AppendLine();
@@ -156,9 +156,43 @@ internal static class ReportWriter
             + (impossible.Length > 0 ? $" {catalog.Statuses["unavailable"]}: {string.Join(", ", impossible)}." : "");
     }
 
-    private static string Members(IEnumerable<MemberRow> members, bool callers) => string.Join(", ", members.Select(member =>
-        (member.CallSites > 0 ? $"{member.Member} ({member.CallSites})" : member.Member)
-        + (callers && member.Callers.Count > 0 ? $" in {string.Join(", ", member.Callers)}" : "")));
+    private static string Members(IEnumerable<MemberRow> members, bool callers, Func<string, string> name) => string.Join(", ", members.Select(member =>
+        (member.CallSites > 0 ? $"{name(member.Member)} ({member.CallSites})" : name(member.Member))
+        + (callers && member.Callers.Count > 0 ? $" in {string.Join(", ", member.Callers.Select(name))}" : "")));
+
+    /// <summary>Removes control characters, so names and paths cannot drive the terminal.</summary>
+    internal static string Clean(string value) =>
+        value.Any(char.IsControl) ? string.Concat(value.Where(character => !char.IsControl(character))) : value;
+
+    /// <summary>A name read from an assembly as literal Markdown text.</summary>
+    internal static string Escape(string value)
+    {
+        var text = new StringBuilder();
+        foreach (var character in Clean(value))
+        {
+            if (character is '\\' or '`' or '<' or '>' or '[' or ']' or '*' or '_')
+            {
+                text.Append('\\');
+            }
+            text.Append(character);
+        }
+        return text.ToString();
+    }
+
+    /// <summary>A Markdown code span that holds the value as is, backticks included.</summary>
+    internal static string Code(string value)
+    {
+        value = Clean(value);
+        var longest = 0;
+        for (int index = 0, run = 0; index < value.Length; index++)
+        {
+            run = value[index] == '`' ? run + 1 : 0;
+            longest = Math.Max(longest, run);
+        }
+        var fence = new string('`', longest + 1);
+        var padding = value.StartsWith('`') || value.EndsWith('`') ? " " : "";
+        return $"{fence}{padding}{value}{padding}{fence}";
+    }
 
     /// <summary>"Verified", or "Verified (mail, calendar); Verified with differences (tasks)" when the kinds of items differ.</summary>
     private static string Status(IReadOnlyList<CoverageRow> coverage, Catalog catalog, bool link)

@@ -1,3 +1,5 @@
+using System.IO.Enumeration;
+
 namespace EwsScan;
 
 internal sealed record MemberRow(string Member, int CallSites, IReadOnlyCollection<string> Callers);
@@ -142,7 +144,7 @@ internal static class FolderScanner
         var root = Path.GetFullPath(path);
         var files = File.Exists(root)
             ? [root]
-            : Directory.EnumerateFiles(root, "*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true })
+            : Files(root)
                 .Where(file => Path.GetExtension(file).ToLowerInvariant() is ".dll" or ".exe")
                 .Where(file => !Path.GetRelativePath(root, file).Split(Path.DirectorySeparatorChar).SkipLast(1).Any(folder => SkippedFolders.Contains(folder, StringComparer.OrdinalIgnoreCase)))
                 .ToArray();
@@ -159,4 +161,14 @@ internal static class FolderScanner
             .ToArray();
         return new ScanReport(root, files.Length, assemblies);
     }
+
+    /// <summary>The files under the folder, without following symbolic links and junctions below it.</summary>
+    private static IEnumerable<string> Files(string root) =>
+        new FileSystemEnumerable<string>(root, (ref FileSystemEntry entry) => entry.ToFullPath(), new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true })
+        {
+            ShouldIncludePredicate = (ref FileSystemEntry entry) => !entry.IsDirectory,
+            // Other reparse points, such as OneDrive folders, are ordinary folders here.
+            ShouldRecursePredicate = (ref FileSystemEntry entry) =>
+                (entry.Attributes & FileAttributes.ReparsePoint) == 0 || new DirectoryInfo(entry.ToFullPath()).LinkTarget is null,
+        };
 }

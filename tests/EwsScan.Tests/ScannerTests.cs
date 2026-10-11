@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Reflection.Metadata.Ecma335;
 using System.Reflection.PortableExecutable;
 
 namespace EwsScan.Tests;
@@ -214,6 +215,152 @@ public class ScannerTests
             .ToArray();
 
         Assert.Empty(missing);
+    }
+
+    [Theory]
+    [InlineData(@"\\host\share\x")]
+    [InlineData("//host/share/x")]
+    [InlineData(@"..\x")]
+    [InlineData("../x")]
+    [InlineData(@"C:\x")]
+    [InlineData("C:x")]
+    [InlineData("..")]
+    [InlineData(".")]
+    [InlineData("")]
+    public void OnlyAPlainLibraryNameIsLookedUpNextToTheAssembly(string libraryName) =>
+        Assert.Null(AssemblyScanner.LibraryFile(Path.GetTempPath(), libraryName));
+
+    [Fact]
+    public void ThePlainLibraryNameIsLookedUpNextToTheAssembly()
+    {
+        var folder = Path.GetTempPath();
+
+        Assert.Equal(
+            Path.Combine(folder, "Microsoft.Exchange.WebServices.dll"),
+            AssemblyScanner.LibraryFile(folder, "Microsoft.Exchange.WebServices"));
+    }
+
+    [Theory]
+    [InlineData(new byte[] { 0x28, 0x01, 0x00, 0x00, 0x77 })]
+    [InlineData(new byte[] { 0x29, 0x01, 0x00, 0x00, 0x0A })]
+    public void AMethodWithBrokenILIsSkipped(byte[] il)
+    {
+        var folder = Directory.CreateTempSubdirectory("ews-scan-").FullName;
+        try
+        {
+            var file = Path.Combine(folder, "ClassicApp.dll");
+            var bytes = File.ReadAllBytes(Fixture("ClassicApp"));
+            il.CopyTo(bytes, FirstMethodBody(bytes, il.Length));
+            File.WriteAllBytes(file, bytes);
+
+            Assert.Equal("ClassicApp", Report(file).Name);
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ALoopOfNestedTypesDoesNotOverflowTheStack()
+    {
+        var metadata = new MetadataBuilder();
+        var name = metadata.GetOrAddString("Loop");
+        metadata.AddModule(0, name, metadata.GetOrAddGuid(Guid.NewGuid()), default, default);
+        var type = metadata.AddTypeDefinition(default, default, name, default, MetadataTokens.FieldDefinitionHandle(1), MetadataTokens.MethodDefinitionHandle(1));
+        metadata.AddNestedType(type, type);
+        var reference = metadata.AddTypeReference(MetadataTokens.TypeReferenceHandle(1), default, name);
+        var image = new BlobBuilder();
+        new MetadataRootBuilder(metadata).Serialize(image, 0, 0);
+        using var provider = MetadataReaderProvider.FromMetadataImage(image.ToImmutableArray());
+        var reader = provider.GetMetadataReader();
+
+        Assert.Throws<BadImageFormatException>(() => TypeNames.Instance.GetTypeFromDefinition(reader, type, 0));
+        Assert.Throws<BadImageFormatException>(() => TypeNames.Instance.GetTypeFromReference(reader, reference, 0));
+    }
+
+    [Fact]
+    public void ALinkBackToAParentFolderIsNotFollowed()
+    {
+        var folder = Directory.CreateTempSubdirectory("ews-scan-").FullName;
+        try
+        {
+            File.Copy(Fixture("ClassicApp"), Path.Combine(folder, "ClassicApp.dll"));
+            var loop = Path.Combine(folder, "loop");
+            if (OperatingSystem.IsWindows())
+            {
+                // A junction needs no extra privilege, unlike a symbolic link.
+                using var mklink = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{loop}\" \"{folder}\"") { UseShellExecute = false, RedirectStandardOutput = true })!;
+                mklink.WaitForExit();
+                Assert.Equal(0, mklink.ExitCode);
+            }
+            else
+            {
+                Directory.CreateSymbolicLink(loop, folder);
+            }
+
+            var report = FolderScanner.Scan(folder, Catalog);
+
+            Assert.Equal(1, report.FilesScanned);
+            Assert.Equal(["ClassicApp"], report.Assemblies.Select(assembly => assembly.Name));
+        }
+        finally
+        {
+            foreach (var link in Directory.EnumerateDirectories(folder))
+            {
+                Directory.Delete(link);
+            }
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void NamesFromTheAssemblyCannotFormatTheReport()
+    {
+        const string hostile = "Evil\u001b]0;x\u0007\u009b<img src=x>[a](b)";
+        MemberRow[] members = [new($"ExchangeService.{hostile}", 1, [hostile])];
+        var report = new ScanReport("C:\\apps", 1,
+        [
+            new AssemblyReport(hostile, "C:\\apps\\Evil.dll", hostile, [], [], [], members),
+        ]);
+
+        var text = ReportWriter.Write(report, Catalog, "text", callers: true, "1.0.0", 100);
+        var markdown = ReportWriter.Write(report, Catalog, "markdown", callers: true, "1.0.0", 100);
+
+        Assert.DoesNotContain(text.Replace(Environment.NewLine, ""), char.IsControl);
+        Assert.Contains("Evil]0;x<img src=x>[a](b)", text);
+        Assert.DoesNotContain(markdown.Replace(Environment.NewLine, ""), char.IsControl);
+        Assert.DoesNotMatch(@"(?<!\\)<img", markdown);
+        Assert.DoesNotContain("[a](b)", markdown);
+        Assert.Contains(@"## Evil\]0;x\<img src=x\>\[a\](b)", markdown);
+        Assert.Contains(@"ExchangeService.Evil\]0;x\<img src=x\>\[a\](b) (1) in Evil\]0;x", markdown);
+    }
+
+    [Theory]
+    [InlineData("C:\\apps", "`C:\\apps`")]
+    [InlineData("a`b", "``a`b``")]
+    [InlineData("`a", "`` `a ``")]
+    public void PathsInMarkdownAreCodeSpans(string path, string expected) =>
+        Assert.Equal(expected, ReportWriter.Code(path));
+
+    /// <summary>The file offset of the IL of the first method with at least the given number of IL bytes.</summary>
+    private static int FirstMethodBody(byte[] image, int length)
+    {
+        using var pe = new PEReader(new MemoryStream(image));
+        var reader = pe.GetMetadataReader();
+        foreach (var method in reader.MethodDefinitions.Select(reader.GetMethodDefinition).Where(method => method.RelativeVirtualAddress != 0))
+        {
+            if (pe.GetMethodBody(method.RelativeVirtualAddress).GetILBytes()!.Length < length)
+            {
+                continue;
+            }
+            var section = pe.PEHeaders.SectionHeaders.Single(header =>
+                method.RelativeVirtualAddress >= header.VirtualAddress && method.RelativeVirtualAddress < header.VirtualAddress + header.VirtualSize);
+            var header = method.RelativeVirtualAddress - section.VirtualAddress + section.PointerToRawData;
+            // A tiny header is one byte; a fat header is twelve.
+            return header + ((image[header] & 3) == 2 ? 1 : 12);
+        }
+        throw new InvalidOperationException("No method body is long enough.");
     }
 
     private static IEnumerable<string> Evidence(AssemblyReport report, string signal) =>

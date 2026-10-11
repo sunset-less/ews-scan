@@ -67,11 +67,15 @@ internal sealed partial class AssemblyScanner(Catalog catalog)
             var reader = pe.GetMetadataReader();
             return reader.IsAssembly ? Scan(path, pe, reader) : null;
         }
-        catch (Exception exception) when (exception is BadImageFormatException or IOException or UnauthorizedAccessException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException || Undecodable(exception))
         {
             return null;
         }
     }
+
+    /// <summary>The exceptions System.Reflection.Metadata throws for malformed metadata or IL.</summary>
+    private static bool Undecodable(Exception exception) =>
+        exception is BadImageFormatException or ArgumentException or InvalidCastException or InvalidOperationException;
 
     private AssemblyUsage? Scan(string path, PEReader pe, MetadataReader reader)
     {
@@ -121,14 +125,14 @@ internal sealed partial class AssemblyScanner(Catalog catalog)
             {
                 continue;
             }
-            var caller = CallerName(
-                TypeNames.Instance.GetTypeFromDefinition(reader, method.GetDeclaringType(), 0),
-                reader.GetString(method.Name));
             try
             {
+                var caller = CallerName(
+                    TypeNames.Instance.GetTypeFromDefinition(reader, method.GetDeclaringType(), 0),
+                    reader.GetString(method.Name));
                 walk.Method(pe.GetMethodBody(method.RelativeVirtualAddress).GetILReader(), caller);
             }
-            catch (BadImageFormatException)
+            catch (Exception exception) when (Undecodable(exception))
             {
             }
         }
@@ -171,8 +175,7 @@ internal sealed partial class AssemblyScanner(Catalog catalog)
     private Dictionary<string, Dictionary<int, string>> EnumNames(string folder, string libraryName, string numbering)
     {
         var names = new Dictionary<string, Dictionary<int, string>>();
-        var file = System.IO.Path.Combine(folder, libraryName + ".dll");
-        if (File.Exists(file))
+        if (LibraryFile(folder, libraryName) is { } file && File.Exists(file))
         {
             try
             {
@@ -197,7 +200,7 @@ internal sealed partial class AssemblyScanner(Catalog catalog)
                     }
                 }
             }
-            catch (Exception exception) when (exception is BadImageFormatException or IOException or UnauthorizedAccessException or InvalidOperationException)
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException || Undecodable(exception))
             {
                 names.Clear();
             }
@@ -213,6 +216,18 @@ internal sealed partial class AssemblyScanner(Catalog catalog)
             }
         }
         return names;
+    }
+
+    /// <summary>The library file in the assembly's folder, or null when the referenced name is not a plain file name.</summary>
+    internal static string? LibraryFile(string folder, string libraryName)
+    {
+        if (libraryName is "" or "." or ".." || libraryName.IndexOfAny([.. System.IO.Path.GetInvalidFileNameChars(), '/', '\\', ':']) >= 0)
+        {
+            return null;
+        }
+        var file = System.IO.Path.GetFullPath(System.IO.Path.Combine(folder, libraryName + ".dll"));
+        var parent = System.IO.Path.TrimEndingDirectorySeparator(System.IO.Path.GetFullPath(folder));
+        return System.IO.Path.GetDirectoryName(file) == parent ? file : null;
     }
 
     private sealed record Target(string? Member, int Parameters, bool Instance, bool Returns, string?[] Enums, bool PassesArgumentThrough);

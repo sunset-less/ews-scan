@@ -43,11 +43,11 @@
     },
     "mail-junk": {
       "title": "MarkAsJunk",
-      "status": "differences"
+      "status": "verified"
     },
     "mail-properties": {
       "title": "Additional item properties",
-      "status": "differences"
+      "status": "verified"
     },
     "calendar-items": {
       "title": "Appointments and recurring series",
@@ -64,6 +64,10 @@
     "calendar-folders": {
       "title": "Calendar folders",
       "status": "verified"
+    },
+    "calendar-folders-move": {
+      "title": "Moving and copying calendars",
+      "status": "differences"
     },
     "contacts-read": {
       "title": "Contacts: find and read",
@@ -83,7 +87,7 @@
     },
     "contacts-people": {
       "title": "People search",
-      "status": "differences"
+      "status": "verified"
     },
     "tasks": {
       "title": "Tasks",
@@ -134,12 +138,16 @@
       "status": "differences"
     },
     "user-configuration": {
-      "title": "User configuration: CategoryList and WorkHours",
+      "title": "User configuration objects",
       "status": "differences"
+    },
+    "retention-tag-list": {
+      "title": "Retention policy tags",
+      "status": "verified"
     },
     "photos": {
       "title": "User photos",
-      "status": "differences"
+      "status": "verified"
     },
     "password": {
       "title": "GetPasswordExpirationDate and GetPeopleInsights",
@@ -165,16 +173,8 @@
       "title": "Online archive mailboxes",
       "status": "unavailable"
     },
-    "custom-user-configuration": {
-      "title": "Custom UserConfiguration objects",
-      "status": "unavailable"
-    },
     "folder-permissions": {
       "title": "Folder permissions other than calendars",
-      "status": "unavailable"
-    },
-    "junk-lists": {
-      "title": "Blocked and safe senders lists",
       "status": "unavailable"
     },
     "add-ins": {
@@ -183,10 +183,6 @@
     },
     "ome": {
       "title": "Message encryption settings",
-      "status": "unavailable"
-    },
-    "retention-tag-list": {
-      "title": "The retention tag list",
       "status": "unavailable"
     },
     "mime-calendar-contacts": {
@@ -379,14 +375,14 @@
     "GetUserConfiguration": {
       "any": "user-configuration"
     },
+    "CreateUserConfiguration": {
+      "any": "user-configuration"
+    },
     "UpdateUserConfiguration": {
       "any": "user-configuration"
     },
-    "CreateUserConfiguration": {
-      "any": "custom-user-configuration"
-    },
     "DeleteUserConfiguration": {
-      "any": "custom-user-configuration"
+      "any": "user-configuration"
     },
     "GetUserPhoto": {
       "any": "photos"

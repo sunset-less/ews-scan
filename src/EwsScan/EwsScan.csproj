@@ -15,7 +15,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>ews-scan</ToolCommandName>
     <PackageId>Sunsetless.EwsScan</PackageId>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Authors>Sunsetless</Authors>
     <Description>Lists the EWS Managed API calls in compiled .NET assemblies and shows what each EWS operation becomes in Microsoft Graph.</Description>
     <PackageTags>ews;ews-managed-api;exchange-web-services;microsoft-graph;exchange-online;ews-retirement;migration</PackageTags>
@@ -23,6 +23,7 @@
     <PackageProjectUrl>https://github.com/sunset-less/ews-scan</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sunset-less/ews-scan</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>The Sunsetless line shows the coverage of Sunsetless EWS 2.1.0. The scanner looks for an EWS library only by its plain file name in the scanned assembly's folder, so a crafted reference name cannot open a network share. A method or an assembly it cannot read is skipped instead of stopping the scan. Type chains are followed at most 64 levels deep, so a loop in the metadata cannot overflow the stack. The scan does not follow symbolic links or junctions under the start folder. The text and Markdown reports drop control characters, and the Markdown report escapes formatting characters; JSON is unchanged.</PackageReleaseNotes>
     <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 

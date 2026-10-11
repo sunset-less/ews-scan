@@ -10,24 +10,33 @@ internal sealed class TypeNames : ISignatureTypeProvider<string, object?>
 
     public string GetPrimitiveType(PrimitiveTypeCode typeCode) => typeCode.ToString();
 
-    public string GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte rawTypeKind)
+    private const int MaxNesting = 64;
+
+    public string GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte rawTypeKind) => Definition(reader, handle, 0);
+
+    public string GetTypeFromReference(MetadataReader reader, TypeReferenceHandle handle, byte rawTypeKind) => Reference(reader, handle, 0);
+
+    private static string Definition(MetadataReader reader, TypeDefinitionHandle handle, int depth)
     {
         var type = reader.GetTypeDefinition(handle);
         var name = reader.GetString(type.Name);
         var declaring = type.GetDeclaringType();
         return declaring.IsNil
             ? Qualified(reader.GetString(type.Namespace), name)
-            : $"{GetTypeFromDefinition(reader, declaring, rawTypeKind)}/{name}";
+            : $"{Definition(reader, declaring, Deeper(depth))}/{name}";
     }
 
-    public string GetTypeFromReference(MetadataReader reader, TypeReferenceHandle handle, byte rawTypeKind)
+    private static string Reference(MetadataReader reader, TypeReferenceHandle handle, int depth)
     {
         var type = reader.GetTypeReference(handle);
         var name = reader.GetString(type.Name);
         return type.ResolutionScope.Kind == HandleKind.TypeReference
-            ? $"{GetTypeFromReference(reader, (TypeReferenceHandle)type.ResolutionScope, rawTypeKind)}/{name}"
+            ? $"{Reference(reader, (TypeReferenceHandle)type.ResolutionScope, Deeper(depth))}/{name}"
             : Qualified(reader.GetString(type.Namespace), name);
     }
+
+    private static int Deeper(int depth) =>
+        depth < MaxNesting ? depth + 1 : throw new BadImageFormatException("The chain of nested types is too deep or forms a loop.");
 
     public string GetTypeFromSpecification(MetadataReader reader, object? genericContext, TypeSpecificationHandle handle, byte rawTypeKind) =>
         reader.GetTypeSpecification(handle).DecodeSignature(this, genericContext);
