@@ -117,6 +117,10 @@
       "title": "ConvertId",
       "status": "verified"
     },
+    "archive": {
+      "title": "Online archive mailboxes",
+      "status": "verified"
+    },
     "notifications": {
       "title": "Pull and streaming notifications",
       "status": "differences"
@@ -167,10 +171,6 @@
     },
     "public-folders": {
       "title": "Public folders in Exchange Online",
-      "status": "unavailable"
-    },
-    "archive": {
-      "title": "Online archive mailboxes",
       "status": "unavailable"
     },
     "folder-permissions": {
